@@ -11,20 +11,20 @@ from .scenarios import TEST_SCENARIOS, TRAIN_SCENARIOS
 
 
 def collect_training(seeds, episodes):
-    class ObserveWithoutIntervention:
-        name = "training_observer"
-        def reset(self): pass
-        def act(self, observation):
-            from .types import Action
-            return Action.WAIT
+    from .types import Action
+    import numpy as np
     sequences=[]
     for seed in seeds:
         for i in range(max(18,episodes//2)):
             sc=TRAIN_SCENARIOS[i%len(TRAIN_SCENARIOS)]
-            # Collect complete causal histories without allowing an oracle action
-            # to terminate the episode at the first hidden-state transition.
-            _,h=run_episode(sc,seed*10000+i,lambda env: ObserveWithoutIntervention())
-            sequences.append(h)
+            env=WorkflowEnv(sc,seed*10000+i); obs=env.reset(); seq=[]
+            oracle=OraclePolicy(lambda:env.hidden_condition)
+            rng=np.random.default_rng(seed*10000+i+97)
+            while not env.done:
+                seq.append((obs,oracle.act(obs)))
+                action=Action.RETRY if obs.recent_failures>0 and rng.random()<.35 else Action.WAIT
+                obs,_=env.step(action)
+            sequences.append(seq)
     return sequences
 
 
