@@ -29,11 +29,9 @@ an exact experiment manifest. For a fast smoke test use `--episodes 12`.
 4. Rolling-feature logistic classifier
 5. Small GRU with explicit elapsed-time inputs
 
-The GRU uses a deterministic fixed recurrent feature map with a fitted linear
-readout. This intentionally provides a small, reproducible recurrent baseline
-without making Experiment 001 depend on a GPU framework. Fully trainable GRUs
-belong in the next controlled model-tuning iteration.
+The GRU is trained end-to-end with deterministic sequence BPTT and Adam
+implemented in NumPy. This keeps Experiment 001 reproducible without a GPU
+framework while ensuring that the recurrent state itself is learned.
 
 See [the charter](docs/RESEARCH_CHARTER.md), [experiment specification](docs/EXPERIMENT_001.md),
 and [decision log](docs/DECISIONS.md).
-
