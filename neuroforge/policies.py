@@ -108,3 +108,13 @@ class GRUPolicy:
         self.reset(); return self
     def reset(self): self.h=np.zeros(self.hidden)
     def act(self,o): return Action(int(np.argmax(self._advance(o.vector()))))
+
+
+class GRUNoMemoryPolicy:
+    """Diagnostic ablation: identical trained GRU, hidden state reset each step."""
+    name = "gru_no_memory"
+    def __init__(self, model: GRUPolicy): self.model=model
+    def reset(self): self.model.reset()
+    def act(self,o):
+        self.model.reset()
+        return self.model.act(o)
