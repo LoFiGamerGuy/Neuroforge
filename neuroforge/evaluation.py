@@ -34,5 +34,14 @@ def aggregate(results: list[EpisodeResult]) -> dict[str,float]:
     }
 
 
-def episode_dict(r: EpisodeResult) -> dict: return asdict(r)
+def seed_cluster_intervals(seed_results: list[list[EpisodeResult]], bootstrap_seed: int=20260912) -> dict[str,list[float]]:
+    """Bootstrap whole seed clusters; episodes within a seed stay together."""
+    metrics=("completion_rate","severe_failure_rate","total_cost_mean","completion_time_p95")
+    per_seed=[aggregate(x) for x in seed_results]
+    values={m:np.asarray([s[m] for s in per_seed]) for m in metrics}
+    rng=np.random.default_rng(bootstrap_seed); n=len(per_seed)
+    indices=rng.integers(0,n,size=(4000,n))
+    return {m:[float(x) for x in np.quantile(v[indices].mean(axis=1),[.025,.975])] for m,v in values.items()}
 
+
+def episode_dict(r: EpisodeResult) -> dict: return asdict(r)
