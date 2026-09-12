@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neuroforge"
+version = "0.1.0"
+description = "Falsification-oriented benchmark for persistent workflow controllers"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26", "scikit-learn>=1.4", "PyYAML>=6"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10"]
+
+[project.scripts]
+neuroforge-benchmark = "neuroforge.benchmark:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["neuroforge*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
