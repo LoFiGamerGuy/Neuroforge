@@ -29,3 +29,9 @@ gradient updates without introducing a GPU-framework dependency.
 Learned policies train on causal observations paired with privileged simulator
 oracle labels. They no longer imitate the rules baseline. Exploratory behavior
 generates retry-history coverage; hidden state never enters policy features.
+
+## 2026-09-12 — Cluster uncertainty and memory ablation
+
+Confidence intervals resample seed clusters. A no-memory GRU ablation separates
+benefit from the learned nonlinear decision surface from benefit attributable
+to persistent recurrent state.
