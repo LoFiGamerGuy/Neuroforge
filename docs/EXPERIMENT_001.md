@@ -41,6 +41,11 @@ without collapsing them into a convenient scalar.
 The manifest records seeds, scenario split, runtime, timestamp, and a source
 digest. JSON/CSV are machine readable; Markdown is the comparative report.
 
+Confidence intervals bootstrap complete seed clusters rather than treating all
+episodes as independent. `gru_no_memory` is a diagnostic ablation using the
+trained GRU weights while resetting recurrent state before every action; it is
+not an additional architecture competitor.
+
 ## Limits
 
 This synthetic environment establishes apparatus validity, not external
