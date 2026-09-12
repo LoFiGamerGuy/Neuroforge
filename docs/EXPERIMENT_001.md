@@ -44,7 +44,7 @@ digest. JSON/CSV are machine readable; Markdown is the comparative report.
 ## Limits
 
 This synthetic environment establishes apparatus validity, not external
-validity for real agent workflows. The GRU recurrent core is fixed with a
-trained readout, so a fully end-to-end trained GRU remains a planned stronger
-baseline. No claim about H2 or H3 is permitted from this experiment.
-
+validity for real agent workflows. Training labels use privileged simulator
+state; that is appropriate for this controlled benchmark but such labels are
+not assumed available in deployment. No claim about H2 or H3 is permitted from
+this experiment.
