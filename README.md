@@ -35,3 +35,10 @@ framework while ensuring that the recurrent state itself is learned.
 
 See [the charter](docs/RESEARCH_CHARTER.md), [experiment specification](docs/EXPERIMENT_001.md),
 and [decision log](docs/DECISIONS.md).
+
+## Current finding
+
+Learned policies outperform the initial rules on the synthetic holdout, but a
+GRU ablation that resets hidden state every step slightly outperforms the
+persistent GRU. Experiment 001 therefore does **not yet support a causal benefit
+from recurrent persistence**. See `docs/BASELINE_RESULTS.md`.
