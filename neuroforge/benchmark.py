@@ -5,8 +5,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .environment import WorkflowEnv
-from .evaluation import aggregate, episode_dict, run_episode
-from .policies import ClassifierPolicy, GRUPolicy, OraclePolicy, RulesPolicy, StatisticalPolicy
+from .evaluation import aggregate, episode_dict, run_episode, seed_cluster_intervals
+from .policies import ClassifierPolicy, GRUNoMemoryPolicy, GRUPolicy, OraclePolicy, RulesPolicy, StatisticalPolicy
 from .scenarios import TEST_SCENARIOS, TRAIN_SCENARIOS
 
 
@@ -34,26 +34,35 @@ def benchmark(seeds,episodes):
     factories={
       "oracle":lambda e:OraclePolicy(lambda:e.hidden_condition), "rules":lambda e:RulesPolicy(),
       "statistical":lambda e:StatisticalPolicy(), "classifier":lambda e:classifier, "gru":lambda e:gru,
+      "gru_no_memory":lambda e:GRUNoMemoryPolicy(gru),
     }
     raw=[]; summary={}
     for name,factory in factories.items():
-        results=[]
+        results=[]; grouped=[]
         for seed in seeds:
+            seed_results=[]
             for i in range(episodes):
                 sc=TEST_SCENARIOS[i%len(TEST_SCENARIOS)]
-                r,_=run_episode(sc,seed*100000+i,factory); results.append(r)
+                r,_=run_episode(sc,seed*100000+i,factory); results.append(r); seed_results.append(r)
                 raw.append({"policy":name,"seed":seed,"scenario":sc.name,"family":sc.family,"mechanism":sc.mechanism,**episode_dict(r)})
+            grouped.append(seed_results)
         summary[name]=aggregate(results)
+        summary[name]["seed_cluster_ci95"]=seed_cluster_intervals(grouped)
     return summary,raw
 
 
 def report(summary):
-    lines=["# Experiment 001 Comparative Report","", "Held-out workflow families and failure mechanisms; lower cost/failure/latency is better.","", "| Policy | Completion | Severe failure | Mean cost | Median time | p95 time |", "|---|---:|---:|---:|---:|---:|"]
-    for n,m in summary.items(): lines.append(f"| {n} | {m['completion_rate']:.1%} | {m['severe_failure_rate']:.1%} | {m['total_cost_mean']:.2f} | {m['completion_time_median']:.1f} | {m['completion_time_p95']:.1f} |")
-    nonoracle={n:m for n,m in summary.items() if n!='oracle'}
+    lines=["# Experiment 001 Comparative Report","", "Held-out workflow families and failure mechanisms; lower cost/failure/latency is better. Brackets are 95% seed-cluster bootstrap intervals.","", "| Policy | Completion [95% CI] | Severe failure | Mean cost [95% CI] | Median time | p95 time |", "|---|---:|---:|---:|---:|---:|"]
+    for n,m in summary.items():
+        ci=m["seed_cluster_ci95"]; cr=ci["completion_rate"]; cc=ci["total_cost_mean"]
+        lines.append(f"| {n} | {m['completion_rate']:.1%} [{cr[0]:.1%}, {cr[1]:.1%}] | {m['severe_failure_rate']:.1%} | {m['total_cost_mean']:.2f} [{cc[0]:.2f}, {cc[1]:.2f}] | {m['completion_time_median']:.1f} | {m['completion_time_p95']:.1f} |")
+    nonoracle={n:m for n,m in summary.items() if n not in ('oracle','gru_no_memory')}
     best=max(nonoracle,key=lambda n:(nonoracle[n]['completion_rate'],-nonoracle[n]['severe_failure_rate'],-nonoracle[n]['total_cost_mean']))
     lines += ["",f"**Primary finding:** `{best}` leads the deployable policies by the predefined lexicographic reliability/cost ordering."]
     if best=="rules": lines.append("**Falsification signal:** simple deterministic rules outperformed every learned controller; this result must not be hidden.")
+    if "gru_no_memory" in summary:
+        delta=summary["gru_no_memory"]["total_cost_mean"]-summary["gru"]["total_cost_mean"]
+        lines.append(f"**Memory ablation:** resetting GRU state every decision changes mean cost by {delta:+.2f}; reliability must be checked in the table before attributing this difference to useful memory.")
     lines.append("The oracle is an inaccessible upper bound and is never considered deployable evidence.")
     return "\n".join(lines)+"\n"
 
