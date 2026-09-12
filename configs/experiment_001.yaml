@@ -1,0 +1,7 @@
+experiment: "001"
+action_space: [WAIT, RETRY, ESCALATE]
+seeds: [1, 2, 3]
+episodes_per_seed: 120
+split_policy: held-out-workflow-family-and-failure-mechanism
+headline_metrics: [completion_rate, severe_failure_rate, total_cost_mean, completion_time_p95]
+
