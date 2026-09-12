@@ -21,7 +21,11 @@ from hiding severe failures or wasted work.
 
 ## 2026-09-12 — Minimal recurrent dependency
 
-Experiment 001 uses a deterministic GRU feature map with a learned readout so
-the baseline is reproducible without a GPU framework. A fully trainable GRU is
-explicitly documented as the next strengthening step, not silently implied.
+Experiment 001 uses a fully trainable NumPy GRU so the recurrent core receives
+gradient updates without introducing a GPU-framework dependency.
 
+## 2026-09-12 — Oracle-labeled causal training
+
+Learned policies train on causal observations paired with privileged simulator
+oracle labels. They no longer imitate the rules baseline. Exploratory behavior
+generates retry-history coverage; hidden state never enters policy features.
