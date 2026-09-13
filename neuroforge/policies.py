@@ -19,6 +19,8 @@ class OraclePolicy:
         if c in (HiddenCondition.DEPENDENCY, HiddenCondition.RECOVERING):
             return Action.ESCALATE if o.since_progress >= 9 else Action.WAIT
         if c == HiddenCondition.TRANSIENT and o.retries < 1: return Action.RETRY
+        if c == HiddenCondition.HISTORY_RETRY and o.retries < 1: return Action.RETRY
+        if c == HiddenCondition.HISTORY_ESCALATE: return Action.ESCALATE
         return Action.ESCALATE
 
 
@@ -59,7 +61,7 @@ class GRUPolicy:
     """Small GRU trained end-to-end with deterministic NumPy BPTT/Adam."""
     name = "gru"
     def __init__(self, seed=41, hidden=16):
-        rng=np.random.default_rng(seed); d=12; self.seed=seed; scale=.16
+        rng=np.random.default_rng(seed); d=13; self.seed=seed; scale=.16
         self.params={
             "Wz":rng.normal(0,scale,(hidden,d)), "Uz":rng.normal(0,scale,(hidden,hidden)), "bz":np.zeros(hidden),
             "Wr":rng.normal(0,scale,(hidden,d)), "Ur":rng.normal(0,scale,(hidden,hidden)), "br":np.zeros(hidden),
