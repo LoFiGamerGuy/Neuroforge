@@ -38,16 +38,18 @@ def benchmark(seeds,episodes):
     }
     raw=[]; summary={}
     for name,factory in factories.items():
-        results=[]; grouped=[]
+        results=[]; grouped=[]; scenario_groups={s.name:[] for s in TEST_SCENARIOS}
         for seed in seeds:
             seed_results=[]
             for i in range(episodes):
                 sc=TEST_SCENARIOS[i%len(TEST_SCENARIOS)]
                 r,_=run_episode(sc,seed*100000+i,factory); results.append(r); seed_results.append(r)
+                scenario_groups[sc.name].append(r)
                 raw.append({"policy":name,"seed":seed,"scenario":sc.name,"family":sc.family,"mechanism":sc.mechanism,**episode_dict(r)})
             grouped.append(seed_results)
         summary[name]=aggregate(results)
         summary[name]["seed_cluster_ci95"]=seed_cluster_intervals(grouped)
+        summary[name]["scenario_breakdown"]={k:aggregate(v) for k,v in scenario_groups.items() if v}
     return summary,raw
 
 
@@ -63,13 +65,18 @@ def report(summary):
     if "gru_no_memory" in summary:
         delta=summary["gru_no_memory"]["total_cost_mean"]-summary["gru"]["total_cost_mean"]
         lines.append(f"**Memory ablation:** resetting GRU state every decision changes mean cost by {delta:+.2f}; reliability must be checked in the table before attributing this difference to useful memory.")
+        lines += ["", "## Long-history pair", "", "The early cue is absent from the current observation when intervention is required.", "", "| Policy | Retryable fault retries | Terminal fault retries |", "|---|---:|---:|"]
+        for name in ("classifier","gru","gru_no_memory"):
+            b=summary[name]["scenario_breakdown"]
+            lines.append(f"| {name} | {b['credential_refreshable']['retry_count_mean']:.2f} | {b['credential_revoked']['retry_count_mean']:.2f} |")
+        lines.append("")
     lines.append("The oracle is an inaccessible upper bound and is never considered deployable evidence.")
     return "\n".join(lines)+"\n"
 
 
 def main(argv=None):
-    p=argparse.ArgumentParser(); p.add_argument("--seeds",nargs="+",type=int,default=[1,2,3]); p.add_argument("--episodes",type=int,default=120); p.add_argument("--output",type=Path,default=Path("results")); a=p.parse_args(argv)
-    if a.episodes<5: p.error("--episodes must be at least 5 to cover every held-out scenario")
+    p=argparse.ArgumentParser(); p.add_argument("--seeds",nargs="+",type=int,default=[1,2,3]); p.add_argument("--episodes",type=int,default=140); p.add_argument("--output",type=Path,default=Path("results")); a=p.parse_args(argv)
+    if a.episodes<len(TEST_SCENARIOS): p.error(f"--episodes must be at least {len(TEST_SCENARIOS)} to cover every held-out scenario")
     summary,raw=benchmark(a.seeds,a.episodes); a.output.mkdir(parents=True,exist_ok=True)
     manifest={"experiment":"001","created_utc":datetime.now(timezone.utc).isoformat(),"seeds":a.seeds,"episodes_per_seed":a.episodes,"train_scenarios":[s.name for s in TRAIN_SCENARIOS],"test_scenarios":[s.name for s in TEST_SCENARIOS],"python":platform.python_version(),"platform":platform.platform(),"source_digest":hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
     (a.output/"summary.json").write_text(json.dumps(summary,indent=2)+"\n")
