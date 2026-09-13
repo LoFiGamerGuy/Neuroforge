@@ -15,6 +15,7 @@ class Scenario:
     onset: int
     retry_effectiveness: float
     recovery_at: int | None = None
+    early_cue: float = 0.0
 
 
 TRAIN_SCENARIOS = (
@@ -24,6 +25,8 @@ TRAIN_SCENARIOS = (
     Scenario("bad_config", "deploy", "permanent", HiddenCondition.PERMANENT, 45, 5, 0.0),
     Scenario("agent_loop", "coding", "repetition", HiddenCondition.LOOPING, 45, 8, 0.10),
     Scenario("noisy_output", "analysis", "false_progress", HiddenCondition.FALSE_PROGRESS, 45, 8, 0.15),
+    Scenario("signed_retryable", "legacy_batch", "signed_fault", HiddenCondition.HISTORY_RETRY, 45, 10, 0.85, early_cue=1.0),
+    Scenario("signed_terminal", "legacy_batch", "signed_fault", HiddenCondition.HISTORY_ESCALATE, 45, 10, 0.0, early_cue=-1.0),
 )
 
 # Entire families and mechanisms are held out, not merely random seeds.
@@ -33,5 +36,6 @@ TEST_SCENARIOS = (
     Scenario("novel_deadlock", "simulation", "deadlock", HiddenCondition.PERMANENT, 48, 9, 0.0),
     Scenario("changed_retry_semantics", "migration", "regime_shift", HiddenCondition.TRANSIENT, 40, 7, 0.15),
     Scenario("unseen_slow_solver", "optimization", "slow_solver", HiddenCondition.SLOW, 39, 99, 0.0),
+    Scenario("credential_refreshable", "secure_transfer", "early_context_fault", HiddenCondition.HISTORY_RETRY, 45, 10, 0.85, early_cue=1.0),
+    Scenario("credential_revoked", "secure_transfer", "early_context_fault", HiddenCondition.HISTORY_ESCALATE, 45, 10, 0.0, early_cue=-1.0),
 )
-
