@@ -35,3 +35,10 @@ generates retry-history coverage; hidden state never enters policy features.
 Confidence intervals resample seed clusters. A no-memory GRU ablation separates
 benefit from the learned nonlinear decision surface from benefit attributable
 to persistent recurrent state.
+
+## 2026-09-13 — Exact long-history counterfactual pair
+
+Paired scenarios share random telemetry and an identical current observation at
+failure onset. A signed cue visible only much earlier determines whether RETRY
+or ESCALATE is correct. An automated test verifies both observational identity
+and differing oracle actions.
