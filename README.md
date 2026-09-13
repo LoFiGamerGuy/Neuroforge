@@ -14,7 +14,7 @@ labels (except the explicitly isolated oracle upper bound).
 python -m venv .venv
 . .venv/bin/activate
 pip install -e .
-python -m neuroforge.benchmark --seeds 1 2 3 --episodes 120 --output results
+python -m neuroforge.benchmark --seeds 1 2 3 --episodes 140 --output results
 ```
 
 The command trains where necessary, evaluates all five controllers on held-out
@@ -38,7 +38,8 @@ and [decision log](docs/DECISIONS.md).
 
 ## Current finding
 
-Learned policies outperform the initial rules on the synthetic holdout, but a
-GRU ablation that resets hidden state every step slightly outperforms the
-persistent GRU. Experiment 001 therefore does **not yet support a causal benefit
-from recurrent persistence**. See `docs/BASELINE_RESULTS.md`.
+Learned policies outperform the initial rules on the synthetic holdout. After
+adding an exact long-history counterfactual pair, the persistent GRU also beats
+its no-memory ablation and uniquely avoids an unnecessary retry when the needed
+cue occurred much earlier. This is controlled synthetic evidence—not real-world
+validation—for useful recurrent persistence. See `docs/BASELINE_RESULTS.md`.
