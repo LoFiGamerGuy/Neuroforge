@@ -22,6 +22,8 @@ class HiddenCondition(StrEnum):
     LOOPING = "looping"
     FALSE_PROGRESS = "false_apparent_progress"
     RECOVERING = "spontaneous_recovery"
+    HISTORY_RETRY = "history_dependent_retry"
+    HISTORY_ESCALATE = "history_dependent_escalate"
 
 
 @dataclass(frozen=True)
@@ -38,6 +40,7 @@ class Observation:
     progress_signal: float
     accumulated_cost: float
     last_action: Action
+    context_signal: float = 0.0
 
     def vector(self) -> np.ndarray:
         return np.asarray([
@@ -53,6 +56,7 @@ class Observation:
             np.log1p(self.accumulated_cost) / 5.0,
             float(self.last_action == Action.RETRY),
             float(self.last_action == Action.ESCALATE),
+            self.context_signal,
         ], dtype=np.float64)
 
 
@@ -77,4 +81,3 @@ class Policy(Protocol):
     name: str
     def reset(self) -> None: ...
     def act(self, observation: Observation) -> Action: ...
-
