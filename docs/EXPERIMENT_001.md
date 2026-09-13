@@ -20,6 +20,12 @@ dependency waits, loops, and deadlock. Policies receive sequences online and no
 future-derived features. The oracle alone accesses hidden state and is reported
 only as an upper bound.
 
+The long-history pair emits a one-step signed context cue early in the episode.
+Much later, the two workflows produce exactly identical current observation
+vectors, but one fault is retryable and the other requires escalation. This
+tests retained temporal context rather than classification from engineered
+rolling summaries.
+
 ## Controllers and tuning
 
 Policies are implemented in the required order. Learned readouts receive the
@@ -36,7 +42,7 @@ without collapsing them into a convenient scalar.
 
 ## Reproduction
 
-`python -m neuroforge.benchmark --seeds 1 2 3 --episodes 120 --output results`
+`python -m neuroforge.benchmark --seeds 1 2 3 --episodes 140 --output results`
 
 The manifest records seeds, scenario split, runtime, timestamp, and a source
 digest. JSON/CSV are machine readable; Markdown is the comparative report.
